@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#0a0a0f">
+<title>Мөнгөн дэвтэр</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #13131a;
+  --card: #1a1a24;
+  --border: rgba(255,255,255,0.07);
+  --text: #f0f0f8;
+  --muted: rgba(240,240,248,0.45);
+  --accent: #7c6cff;
+  --accent2: #ff6c8a;
+  --green: #2de6a0;
+  --red: #ff5c7a;
+  --yellow: #ffd166;
+  --radius: 18px;
+  --radius-sm: 10px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  min-height: 100vh;
+  padding-bottom: 90px;
+}
+h1, h2, .display { font-family: 'Unbounded', sans-serif; }
+
+/* NAV */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex; z-index: 100;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.nav-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  gap: 4px; padding: 10px 4px; background: none; border: none;
+  color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 11px;
+  cursor: pointer; transition: color .2s;
+}
+.nav-btn.active { color: var(--accent); }
+.nav-btn span { font-size: 22px; line-height: 1; }
+
+/* PAGES */
+.page { display: none; padding: 16px; }
+.page.active { display: block; }
+
+/* HEADER */
+.page-header { padding: 20px 16px 4px; }
+.page-header h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+.month-nav {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px 0;
+}
+.month-nav button {
+  background: var(--card); border: 1px solid var(--border);
+  color: var(--text); border-radius: 50%; width: 36px; height: 36px;
+  font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+#month-label { font-family: 'Unbounded', sans-serif; font-size: 13px; flex: 1; text-align: center; }
+
+/* SUMMARY CARDS */
+.summary-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  padding: 14px 16px;
+}
+.sum-card {
+  background: var(--card); border-radius: var(--radius); padding: 16px;
+  border: 1px solid var(--border);
+}
+.sum-card.balance {
+  grid-column: 1/-1;
+  background: linear-gradient(135deg, #1a1040, #0d1a30);
+  border-color: rgba(124,108,255,0.3);
+}
+.sum-label { font-size: 11px; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .5px; }
+.sum-amount { font-family: 'Unbounded', sans-serif; font-size: 20px; font-weight: 700; }
+.sum-amount.income { color: var(--green); }
+.sum-amount.expense { color: var(--red); }
+.sum-amount.balance-val { color: var(--accent); font-size: 26px; }
+
+/* ADVICE */
+.advice-list { padding: 0 16px 8px; display: flex; flex-direction: column; gap: 8px; }
+.advice-item {
+  border-radius: var(--radius-sm); padding: 12px 14px;
+  font-size: 13px; line-height: 1.5; display: flex; gap: 10px; align-items: flex-start;
+}
+.advice-item.success { background: rgba(45,230,160,0.1); border: 1px solid rgba(45,230,160,0.2); }
+.advice-item.warning { background: rgba(255,209,102,0.1); border: 1px solid rgba(255,209,102,0.2); }
+.advice-item.danger { background: rgba(255,92,122,0.1); border: 1px solid rgba(255,92,122,0.2); }
+.advice-item.info { background: rgba(124,108,255,0.1); border: 1px solid rgba(124,108,255,0.2); }
+.advice-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+/* SECTION TITLE */
+.section-title {
+  font-family: 'Unbounded', sans-serif; font-size: 12px;
+  color: var(--muted); padding: 14px 16px 8px; text-transform: uppercase; letter-spacing: .5px;
+}
+
+/* CATEGORY BARS */
+.cat-list { padding: 0 16px; display: flex; flex-direction: column; gap: 10px; }
+.cat-row { display: flex; flex-direction: column; gap: 5px; }
+.cat-top { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+.cat-name { display: flex; align-items: center; gap: 6px; }
+.cat-bar-bg { background: var(--border); border-radius: 4px; height: 5px; }
+.cat-bar-fill { height: 5px; border-radius: 4px; background: var(--accent); transition: width .5s ease; }
+.goal-badge { font-size: 11px; color: var(--yellow); }
+
+/* TRANSACTION LIST */
+.tx-list { padding: 0 16px; display: flex; flex-direction: column; gap: 8px; }
+.tx-item {
+  background: var(--card); border-radius: var(--radius-sm);
+  border: 1px solid var(--border); padding: 12px 14px;
+  display: flex; align-items: center; gap: 12px;
+}
+.tx-icon { font-size: 22px; flex-shrink: 0; }
+.tx-info { flex: 1; min-width: 0; }
+.tx-cat { font-size: 13px; font-weight: 500; }
+.tx-note { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tx-right { text-align: right; flex-shrink: 0; }
+.tx-amount { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 700; }
+.tx-amount.inc { color: var(--green); }
+.tx-amount.exp { color: var(--red); }
+.tx-date { font-size: 11px; color: var(--muted); }
+.tx-del { background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; padding: 4px; flex-shrink: 0; }
+.tx-del:active { color: var(--red); }
+
+/* EMPTY */
+.empty { text-align: center; padding: 48px 16px; color: var(--muted); }
+.empty-icon { font-size: 48px; margin-bottom: 12px; }
+
+/* ADD FORM */
+.add-form { padding: 0 16px; }
+.type-toggle {
+  display: grid; grid-template-columns: 1fr 1fr;
+  background: var(--card); border-radius: var(--radius-sm);
+  padding: 4px; gap: 4px; margin-bottom: 16px;
+}
+.type-btn {
+  padding: 10px; border: none; border-radius: 8px;
+  font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: all .2s; background: transparent; color: var(--muted);
+}
+.type-btn.active.exp { background: rgba(255,92,122,0.2); color: var(--red); }
+.type-btn.active.inc { background: rgba(45,230,160,0.2); color: var(--green); }
+
+.form-group { margin-bottom: 14px; }
+.form-label { font-size: 12px; color: var(--muted); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: .4px; }
+.form-input, .form-select {
+  width: 100%; background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 13px 14px;
+  color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 15px;
+  outline: none; appearance: none;
+}
+.form-input:focus, .form-select:focus { border-color: var(--accent); }
+.amount-input-wrap { position: relative; }
+.amount-currency { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 13px; }
+
+.cat-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+}
+.cat-btn {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 10px 4px;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  cursor: pointer; transition: all .15s; color: var(--muted); font-size: 11px;
+}
+.cat-btn span { font-size: 22px; }
+.cat-btn.selected { border-color: var(--accent); color: var(--text); background: rgba(124,108,255,0.12); }
+
+.submit-btn {
+  width: 100%; padding: 16px; border: none; border-radius: var(--radius);
+  background: var(--accent); color: white;
+  font-family: 'Unbounded', sans-serif; font-size: 14px; font-weight: 700;
+  cursor: pointer; margin-top: 8px; letter-spacing: .5px;
+  transition: opacity .2s;
+}
+.submit-btn:active { opacity: .8; }
+.submit-btn:disabled { opacity: .4; }
+
+/* GOALS */
+.goals-form { padding: 0 16px; }
+.goal-row {
+  background: var(--card); border-radius: var(--radius-sm);
+  border: 1px solid var(--border); padding: 14px;
+  margin-bottom: 10px;
+}
+.goal-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.goal-name { display: flex; align-items: center; gap: 6px; font-size: 14px; }
+.goal-progress { font-size: 12px; color: var(--muted); }
+.goal-input-row { display: flex; gap: 8px; }
+.goal-input { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; color: var(--text); font-size: 13px; }
+.goal-save-btn { background: var(--accent); border: none; border-radius: 8px; padding: 9px 14px; color: white; font-size: 12px; cursor: pointer; white-space: nowrap; }
+.progress-bar { height: 4px; background: var(--border); border-radius: 4px; margin-top: 8px; }
+.progress-fill { height: 4px; border-radius: 4px; transition: width .4s ease; }
+
+/* YEARLY */
+.yearly-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; padding: 0 16px 16px; }
+.yearly-card { background: var(--card); border-radius: var(--radius-sm); border: 1px solid var(--border); padding: 14px 12px; }
+.yearly-month { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+.yearly-exp { color: var(--red); font-size: 13px; font-weight: 500; }
+.yearly-inc { color: var(--green); font-size: 12px; }
+
+.chart-wrap { padding: 0 16px 16px; }
+.bar-chart { display: flex; align-items: flex-end; gap: 4px; height: 120px; }
+.bar-group { flex: 1; display: flex; align-items: flex-end; gap: 2px; }
+.bar { flex: 1; border-radius: 3px 3px 0 0; min-height: 3px; transition: height .4s ease; }
+.bar.income-bar { background: var(--green); opacity: .6; }
+.bar.expense-bar { background: var(--red); opacity: .8; }
+.bar-labels { display: flex; gap: 4px; padding: 6px 16px 0; }
+.bar-label { flex: 1; text-align: center; font-size: 9px; color: var(--muted); }
+
+.export-btn {
+  margin: 0 16px 12px; width: calc(100% - 32px);
+  padding: 13px; border: 1px solid var(--border);
+  background: var(--card); color: var(--text); border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif; font-size: 14px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--green); color: #000; border-radius: 30px;
+  padding: 10px 22px; font-size: 13px; font-weight: 500;
+  opacity: 0; transition: all .3s; pointer-events: none; z-index: 200; white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.error { background: var(--red); color: white; }
+</style>
+</head>
+<body>
+
+<div class="page active" id="page-home">
+  <div class="page-header">
+    <h1>Мөнгөн дэвтэр 💳</h1>
+  </div>
+  <div class="month-nav">
+    <button onclick="changeMonth(-1)">‹</button>
+    <span id="month-label">—</span>
+    <button onclick="changeMonth(1)">›</button>
+  </div>
+  <div class="summary-grid">
+    <div class="sum-card balance">
+      <div class="sum-label">Үлдэгдэл</div>
+      <div class="sum-amount balance-val" id="bal-balance">₮0</div>
+    </div>
+    <div class="sum-card">
+      <div class="sum-label">Орлого</div>
+      <div class="sum-amount income" id="bal-income">₮0</div>
+    </div>
+    <div class="sum-card">
+      <div class="sum-label">Зарлага</div>
+      <div class="sum-amount expense" id="bal-expense">₮0</div>
+    </div>
+  </div>
+
+  <div class="section-title">Зөвлөгөө</div>
+  <div class="advice-list" id="advice-list"></div>
+
+  <div class="section-title">Ангилалаар</div>
+  <div class="cat-list" id="cat-list"></div>
+
+  <div class="section-title">Бүртгэл</div>
+  <div class="tx-list" id="tx-list">
+    <div class="empty"><div class="empty-icon">📭</div><div>Бүртгэл байхгүй байна</div></div>
+  </div>
+</div>
+
+<div class="page" id="page-add">
+  <div class="page-header"><h1>Бүртгэх ➕</h1></div>
+  <div style="height:14px"></div>
+  <div class="add-form">
+    <div class="type-toggle">
+      <button class="type-btn active exp" onclick="setType('expense')">Зарлага</button>
+      <button class="type-btn inc" onclick="setType('income')">Орлого</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Огноо</label>
+      <input type="date" id="inp-date" class="form-input">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Дүн</label>
+      <div class="amount-input-wrap">
+        <input type="number" id="inp-amount" class="form-input" placeholder="50,000" inputmode="numeric">
+        <span class="amount-currency">₮</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Ангилал</label>
+      <div class="cat-grid" id="cat-grid"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Тэмдэглэл (заавал биш)</label>
+      <input type="text" id="inp-note" class="form-input" placeholder="Жишээ: ажлын үдийн хоол">
+    </div>
+    <button class="submit-btn" onclick="submitTransaction()">ХАДГАЛАХ</button>
+  </div>
+</div>
+
+<div class="page" id="page-goals">
+  <div class="page-header"><h1>Зорилго 🎯</h1></div>
+  <div style="height:14px"></div>
+  <div class="section-title">Сарын зарлагын дээд хэмжээ</div>
+  <div class="goals-form" id="goals-form"></div>
+</div>
+
+<div class="page" id="page-yearly">
+  <div class="page-header"><h1>Жилийн тайлан 📊</h1></div>
+  <div style="height:14px"></div>
+  <div class="summary-grid" style="padding:0 16px 14px">
+    <div class="sum-card">
+      <div class="sum-label">Нийт орлого</div>
+      <div class="sum-amount income" id="y-income">₮0</div>
+    </div>
+    <div class="sum-card">
+      <div class="sum-label">Нийт зарлага</div>
+      <div class="sum-amount expense" id="y-expense">₮0</div>
+    </div>
+  </div>
+
+  <div class="section-title">Сараар (орлого / зарлага)</div>
+  <div class="chart-wrap">
+    <div class="bar-chart" id="year-chart"></div>
+    <div class="bar-labels" id="year-labels"></div>
+  </div>
+
+  <div class="section-title">Хамгийн их зарлагын ангилалууд</div>
+  <div class="cat-list" id="year-cat-list"></div>
+
+  <div class="section-title">Зөвлөгөө</div>
+  <div class="advice-list" id="year-advice"></div>
+
+  <div style="height:16px"></div>
+  <button class="export-btn" onclick="exportCSV()">📥 CSV татах (бүх бүртгэл)</button>
+  <button class="export-btn" onclick="exportCSV(currentMonth)">📤 CSV татах (энэ сар)</button>
+</div>
+
+<nav class="bottom-nav">
+  <button class="nav-btn active" onclick="showPage('home')">
+    <span>🏠</span>Нүүр
+  </button>
+  <button class="nav-btn" onclick="showPage('add')">
+    <span>➕</span>Нэмэх
+  </button>
+  <button class="nav-btn" onclick="showPage('goals')">
+    <span>🎯</span>Зорилго
+  </button>
+  <button class="nav-btn" onclick="showPage('yearly')">
+    <span>📊</span>Жил
+  </button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const CATS = {{ categories | tojson }};
+const MN_MONTHS = ['1-р сар','2-р сар','3-р сар','4-р сар','5-р сар','6-р сар','7-р сар','8-р сар','9-р сар','10-р сар','11-р сар','12-р сар'];
+
+let currentMonth = new Date().toISOString().slice(0,7);
+let selectedType = 'expense';
+let selectedCat = '';
+
+function fmt(n) {
+  return '₮' + Math.round(n).toLocaleString();
+}
+
+function showToast(msg, error=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (error ? ' error' : '');
+  setTimeout(() => t.className = 'toast', 2500);
+}
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.nav-btn')[['home','add','goals','yearly'].indexOf(name)].classList.add('active');
+  if (name === 'home') loadHome();
+  if (name === 'goals') loadGoals();
+  if (name === 'yearly') loadYearly();
+}
+
+function changeMonth(d) {
+  const [y, m] = currentMonth.split('-').map(Number);
+  const nd = new Date(y, m - 1 + d, 1);
+  currentMonth = nd.toISOString().slice(0,7);
+  loadHome();
+}
+
+function updateMonthLabel() {
+  const [y, m] = currentMonth.split('-').map(Number);
+  document.getElementById('month-label').textContent = y + ' / ' + MN_MONTHS[m-1];
+}
+
+async function loadHome() {
+  updateMonthLabel();
+  const [stats, txs] = await Promise.all([
+    fetch('/api/stats?month=' + currentMonth).then(r => r.json()),
+    fetch('/api/transactions?month=' + currentMonth).then(r => r.json())
+  ]);
+
+  document.getElementById('bal-income').textContent = fmt(stats.income);
+  document.getElementById('bal-expense').textContent = fmt(stats.expense);
+  const bal = stats.balance;
+  const balEl = document.getElementById('bal-balance');
+  balEl.textContent = (bal >= 0 ? '' : '-') + fmt(Math.abs(bal));
+  balEl.style.color = bal >= 0 ? 'var(--green)' : 'var(--red)';
+
+  // Advices
+  const adv = document.getElementById('advice-list');
+  if (stats.advices.length === 0) {
+    adv.innerHTML = '<div style="padding:8px 0;color:var(--muted);font-size:13px;">Бүртгэл нэмснээр зөвлөгөө гарна.</div>';
+  } else {
+    adv.innerHTML = stats.advices.map(a => {
+      const icons = {success:'✅', warning:'⚠️', danger:'🚨', info:'💡'};
+      return `<div class="advice-item ${a.type}"><span class="advice-icon">${icons[a.type]||'💡'}</span><span>${a.text}</span></div>`;
+    }).join('');
+  }
+
+  // Categories
+  const maxVal = Math.max(...Object.values(stats.by_category), 1);
+  const catEl = document.getElementById('cat-list');
+  const sorted = Object.entries(stats.by_category).sort((a,b) => b[1]-a[1]);
+  if (sorted.length === 0) {
+    catEl.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:4px 0;">Зарлага байхгүй</div>';
+  } else {
+    catEl.innerHTML = sorted.map(([k,v]) => {
+      const c = CATS[k] || {name:k, icon:'📦'};
+      const pct = (v / maxVal * 100).toFixed(0);
+      const goal = stats.goals[k];
+      const goalPct = goal ? Math.min(v / goal * 100, 100).toFixed(0) : null;
+      const barColor = goal && v > goal ? 'var(--red)' : 'var(--accent)';
+      return `<div class="cat-row">
+        <div class="cat-top">
+          <span class="cat-name">${c.icon} ${c.name}</span>
+          <span style="font-size:13px;font-weight:500;">${fmt(v)}${goal ? `<span class="goal-badge"> / ${fmt(goal)}</span>` : ''}</span>
+        </div>
+        <div class="cat-bar-bg"><div class="cat-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
+      </div>`;
+    }).join('');
+  }
+
+  // Transactions
+  const txEl = document.getElementById('tx-list');
+  if (txs.length === 0) {
+    txEl.innerHTML = '<div class="empty"><div class="empty-icon">📭</div><div>Энэ сард бүртгэл байхгүй</div></div>';
+  } else {
+    txEl.innerHTML = txs.map(tx => {
+      const c = CATS[tx.category] || {name: tx.category, icon:'📦'};
+      const isInc = tx.type === 'income';
+      return `<div class="tx-item">
+        <span class="tx-icon">${c.icon}</span>
+        <div class="tx-info">
+          <div class="tx-cat">${c.name}</div>
+          ${tx.note ? `<div class="tx-note">${tx.note}</div>` : `<div class="tx-note">${tx.date}</div>`}
+        </div>
+        <div class="tx-right">
+          <div class="tx-amount ${isInc?'inc':'exp'}">${isInc?'+':'-'}${fmt(tx.amount)}</div>
+          <div class="tx-date">${tx.note ? tx.date : ''}</div>
+        </div>
+        <button class="tx-del" onclick="deleteTx(${tx.id})">×</button>
+      </div>`;
+    }).join('');
+  }
+}
+
+async function deleteTx(id) {
+  if (!confirm('Устгах уу?')) return;
+  await fetch('/api/transactions/' + id, {method:'DELETE'});
+  showToast('Устгагдлаа');
+  loadHome();
+}
+
+// ADD FORM
+function buildCatGrid() {
+  const grid = document.getElementById('cat-grid');
+  grid.innerHTML = Object.entries(CATS).map(([k, v]) =>
+    `<button class="cat-btn" data-cat="${k}" onclick="selectCat('${k}')">${v.icon}<span style="font-size:10px">${v.name}</span></button>`
+  ).join('');
+}
+
+function selectCat(k) {
+  selectedCat = k;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.toggle('selected', b.dataset.cat === k));
+}
+
+function setType(t) {
+  selectedType = t;
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.type-btn.' + (t==='expense'?'exp':'inc')).classList.add('active');
+}
+
+async function submitTransaction() {
+  const amount = document.getElementById('inp-amount').value;
+  const date = document.getElementById('inp-date').value;
+  const note = document.getElementById('inp-note').value;
+  if (!amount || !date || !selectedCat) {
+    showToast('Бүх талбарыг бөглөнө үү', true); return;
+  }
+  const btn = document.querySelector('.submit-btn');
+  btn.disabled = true;
+  const res = await fetch('/api/transactions', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({type: selectedType, amount, category: selectedCat, note, date})
+  }).then(r => r.json());
+  btn.disabled = false;
+  if (res.ok) {
+    showToast('Амжилттай хадгалагдлаа ✓');
+    document.getElementById('inp-amount').value = '';
+    document.getElementById('inp-note').value = '';
+    selectedCat = '';
+    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('selected'));
+    currentMonth = date.slice(0,7);
+  } else {
+    showToast(res.error || 'Алдаа гарлаа', true);
+  }
+}
+
+// GOALS
+async function loadGoals() {
+  const stats = await fetch('/api/stats?month=' + currentMonth).then(r => r.json());
+  const form = document.getElementById('goals-form');
+  form.innerHTML = Object.entries(CATS).filter(([k]) => k !== 'savings').map(([k, v]) => {
+    const spent = stats.by_category[k] || 0;
+    const goal = stats.goals[k] || '';
+    const pct = goal ? Math.min(spent / goal * 100, 100).toFixed(0) : 0;
+    const barColor = goal && spent > goal ? '#ff5c7a' : '#2de6a0';
+    return `<div class="goal-row">
+      <div class="goal-top">
+        <span class="goal-name">${v.icon} ${v.name}</span>
+        <span class="goal-progress">${fmt(spent)}${goal ? ' / ' + fmt(goal) : ''}</span>
+      </div>
+      <div class="goal-input-row">
+        <input class="goal-input" type="number" placeholder="Хязгаар (₮)" id="goal-${k}" value="${goal}" inputmode="numeric">
+        <button class="goal-save-btn" onclick="saveGoal('${k}')">Хадгалах</button>
+      </div>
+      ${goal ? `<div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${barColor}"></div></div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+async function saveGoal(cat) {
+  const val = document.getElementById('goal-' + cat).value;
+  if (!val) return;
+  await fetch('/api/goals', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({category: cat, month: currentMonth, limit_amount: val})
+  });
+  showToast('Зорилго хадгалагдлаа ✓');
+  loadGoals();
+}
+
+// YEARLY
+async function loadYearly() {
+  const year = currentMonth.slice(0,4);
+  const data = await fetch('/api/yearly?year=' + year).then(r => r.json());
+
+  document.getElementById('y-income').textContent = fmt(data.total_income);
+  document.getElementById('y-expense').textContent = fmt(data.total_expense);
+
+  const months = Array.from({length:12}, (_,i) => year + '-' + String(i+1).padStart(2,'0'));
+  const maxVal = Math.max(...months.map(m => Math.max(data.monthly[m]?.income||0, data.monthly[m]?.expense||0)), 1);
+
+  document.getElementById('year-chart').innerHTML = months.map(m => {
+    const d = data.monthly[m] || {income:0, expense:0};
+    const ih = Math.round(d.income / maxVal * 100);
+    const eh = Math.round(d.expense / maxVal * 100);
+    return `<div class="bar-group">
+      <div class="bar income-bar" style="height:${ih}px"></div>
+      <div class="bar expense-bar" style="height:${eh}px"></div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('year-labels').innerHTML = months.map(m => {
+    const mn = parseInt(m.slice(5));
+    return `<div class="bar-label">${mn}с</div>`;
+  }).join('');
+
+  const sorted = Object.entries(data.by_category).sort((a,b)=>b[1]-a[1]);
+  const maxCat = Math.max(...sorted.map(x=>x[1]), 1);
+  document.getElementById('year-cat-list').innerHTML = sorted.map(([k,v]) => {
+    const c = CATS[k]||{name:k,icon:'📦'};
+    const pct = (v/maxCat*100).toFixed(0);
+    const totalPct = data.total_expense > 0 ? (v/data.total_expense*100).toFixed(0) : 0;
+    return `<div class="cat-row">
+      <div class="cat-top">
+        <span class="cat-name">${c.icon} ${c.name}</span>
+        <span style="font-size:13px;font-weight:500;">${fmt(v)} <span style="color:var(--muted);font-size:11px;">${totalPct}%</span></span>
+      </div>
+      <div class="cat-bar-bg"><div class="cat-bar-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+
+  const icons = {success:'✅',warning:'⚠️',danger:'🚨',info:'💡'};
+  document.getElementById('year-advice').innerHTML = data.advices.map(a =>
+    `<div class="advice-item ${a.type}"><span class="advice-icon">${icons[a.type]||'💡'}</span><span>${a.text}</span></div>`
+  ).join('') || '<div style="color:var(--muted);font-size:13px;padding:4px 0;">Өгөгдөл нэмснээр жилийн дүн шинжилгээ гарна.</div>';
+}
+
+function exportCSV(month) {
+  const url = '/api/export/csv' + (month ? '?month=' + month : '');
+  window.location.href = url;
+}
+
+// INIT
+document.getElementById('inp-date').value = new Date().toISOString().slice(0,10);
+buildCatGrid();
+loadHome();
+</script>
+</body>
+</html>
